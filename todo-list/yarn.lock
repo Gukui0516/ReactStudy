@@ -3973,9 +3973,9 @@ ejs@^3.1.6:
     jake "^10.8.5"
 
 electron-to-chromium@^1.5.73:
-  version "1.5.77"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.77.tgz#b9e7aa2d833084aac5253d36fc85f99d7cf8ce98"
-  integrity sha512-AnJSrt5JpRVgY6dgd5yccguLc5A7oMSF0Kt3fcW+Hp5WTuFbl5upeSFZbMZYy2o7jhmIhU8Ekrd82GhyXUqUUg==
+  version "1.5.78"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.78.tgz#223cdc76a5d15ac731136e68430e92cb8d612d13"
+  integrity sha512-UmwIt7HRKN1rsJfddG5UG7rCTCTAKoS9JeOy/R0zSenAyaZ8SU3RuXlwcratxhdxGRNpk03iq8O7BA3W7ibLVw==
 
 emittery@^0.10.2:
   version "0.10.2"
@@ -7756,11 +7756,6 @@ prelude-ls@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
   integrity sha512-ESF23V4SKG6lVSGZgYNpbsiaAkdab6ZgOxe52p7+Kid3W3u3bxR4Vfd/o21dmN7jSt0IwgZ4v5MUd26FEtXE9w==
-
-prettier@^3.4.2:
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.4.2.tgz#a5ce1fb522a588bf2b78ca44c6e6fe5aa5a2b13f"
-  integrity sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==
 
 pretty-bytes@^5.3.0, pretty-bytes@^5.4.1:
   version "5.6.0"
