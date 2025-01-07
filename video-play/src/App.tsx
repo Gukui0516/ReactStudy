@@ -1,11 +1,19 @@
 import React from 'react';
 import './App.css';
-import VideoPlayer from './components/VideoPlayer';
+import ShortsPlayer from './components/ShortsPlayer';
+
+
+const videos = [
+  { id: 1, title: "Video 1", url: "/sample1.mp4" },
+  { id: 2, title: "Video 2", url: "/sample2.mp4" },
+  { id: 3, title: "Video 3", url: "/sample3.mp4" },
+  { id: 3, title: "Video 4", url: "/sample4.mp4" },
+];
 
 const App:React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <VideoPlayer url="/sample1.mp4" title="영혼의 가위바위보 에어팟 몰아주기"/>
+    <div>
+      <ShortsPlayer videos={videos} />
     </div>
   );
 }

@@ -24,3 +24,6 @@ yarn-error.log*
 
 # local files
 /public/sample1.mp4
+/public/sample2.mp4
+/public/sample3.mp4
+/public/sample4.mp4
