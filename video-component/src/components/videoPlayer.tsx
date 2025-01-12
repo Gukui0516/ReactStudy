@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import dashjs from "dashjs";
 
 interface PlayerProps {
-  src: string; // MPEG-DASH manifest URL
+  src: string;
   autoplay?: boolean;
 }
 
@@ -15,9 +15,13 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1); // 볼륨 상태
-  const [showControls, setShowControls] = useState(true); // 컨트롤 표시 상태
-  const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null); // 타이머 참조
+  const [volume, setVolume] = useState(1);
+  const [mousePosition, setMousePosition] = useState<
+    "top" | "middle" | "bottom" | null
+  >(null);
+  const [showControls, setShowControls] = useState(true);
+  const [showPlayPauseButton, setShowPlayPauseButton] = useState(false); // 일시정지 버튼 가시성 상태
+  const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -44,16 +48,37 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
     }
   }, [src, autoplay]);
 
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    const { clientY, currentTarget } = event;
+    const height = currentTarget.offsetHeight;
+
+    if (clientY < height * 0.3) {
+      setMousePosition("top");
+    } else if (clientY > height * 0.7) {
+      setMousePosition("bottom");
+    } else {
+      setMousePosition("middle");
+    }
+
+    setShowControls(true);
+    if (hideControlsTimeoutRef.current) {
+      clearTimeout(hideControlsTimeoutRef.current);
+    }
+    hideControlsTimeoutRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 2000);
+  };
+
   const togglePlayPause = () => {
     if (videoRef.current) {
+      setShowPlayPauseButton(true); // 버튼 가시성 활성화
+      setTimeout(() => setShowPlayPauseButton(false), 1000); // 1초 후 비활성화
+
       if (isPlaying) {
         videoRef.current.pause();
-        setIsPlaying(false); // 일시정지 상태 업데이트
+        setIsPlaying(false);
       } else {
-        videoRef.current
-          .play()
-          .then(() => setIsPlaying(true)) // 재생 상태 업데이트
-          .catch((error) => console.error("Error playing video:", error));
+        videoRef.current.play().then(() => setIsPlaying(true));
       }
     }
   };
@@ -75,16 +100,21 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
   const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(event.target.value);
     if (videoRef.current) {
-      videoRef.current.volume = newVolume; // 비디오 볼륨 변경
+      videoRef.current.volume = newVolume;
     }
-    setVolume(newVolume); // 상태 업데이트
+    setVolume(newVolume);
   };
 
   const handleVideoEnded = () => {
     if (videoRef.current) {
-      videoRef.current.currentTime = 0; // 처음으로 되감기
-      videoRef.current.play(); // 비디오 자동 재생
-      setIsPlaying(true); // 재생 상태 업데이트
+      setIsPlaying(true);
+      videoRef.current.currentTime = 0;
+      setTimeout(() => {
+        videoRef.current
+          ?.play()
+          .then(() => setIsPlaying(true))
+          .catch(() => setIsPlaying(false));
+      }, 50);
     }
   };
 
@@ -97,16 +127,6 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
     )}`;
   };
 
-  const handleMouseMove = () => {
-    setShowControls(true); // 컨트롤 표시
-    if (hideControlsTimeoutRef.current) {
-      clearTimeout(hideControlsTimeoutRef.current); // 기존 타이머 초기화
-    }
-    hideControlsTimeoutRef.current = setTimeout(() => {
-      setShowControls(false); // 1초 후 컨트롤 숨기기
-    }, 1000);
-  };
-
   return (
     <div
       className="relative bg-black rounded-lg overflow-hidden shadow-lg"
@@ -114,7 +134,7 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
         width: `${videoDimensions.width}px`,
         height: `${videoDimensions.height}px`,
       }}
-      onMouseMove={handleMouseMove} // 마우스 이동 시 컨트롤 표시
+      onMouseMove={handleMouseMove}
     >
       {/* Video Element */}
       <video
@@ -122,13 +142,14 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
         className="w-full h-full object-contain"
         onTimeUpdate={handleTimeUpdate}
         onClick={togglePlayPause}
-        onEnded={handleVideoEnded} // 자동 재생 처리
+        onEnded={handleVideoEnded}
+        autoPlay={autoplay}
       />
 
       {/* Central Play/Pause Button */}
       <button
         className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-kakao-yellow text-[3rem] rounded-full w-[6.25rem] h-[6.25rem] flex items-center justify-center hover:bg-black/50 transition-opacity duration-1000 ${
-          showControls
+          showPlayPauseButton
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
         }`}
@@ -140,7 +161,9 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
       {/* Custom Controls */}
       <div
         className={`absolute bottom-0 left-0 right-0 text-white p-2 transition-opacity duration-1000 ${
-          showControls ? "opacity-100" : "opacity-0"
+          mousePosition === "bottom" && showControls
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
       >
         <div className="flex items-center space-x-4">
