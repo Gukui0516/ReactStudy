@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import dashjs from "dashjs";
 
 interface PlayerProps {
-  src: string; // MPEG-DASH manifest URL
+  src: string;
   autoplay?: boolean;
 }
 
@@ -19,6 +19,9 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
   const [mousePosition, setMousePosition] = useState<
     "top" | "middle" | "bottom" | null
   >(null);
+  const [showControls, setShowControls] = useState(true);
+  const [showPlayPauseButton, setShowPlayPauseButton] = useState(false); // 일시정지 버튼 가시성 상태
+  const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -56,18 +59,26 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
     } else {
       setMousePosition("middle");
     }
+
+    setShowControls(true);
+    if (hideControlsTimeoutRef.current) {
+      clearTimeout(hideControlsTimeoutRef.current);
+    }
+    hideControlsTimeoutRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 2000);
   };
 
   const togglePlayPause = () => {
     if (videoRef.current) {
+      setShowPlayPauseButton(true); // 버튼 가시성 활성화
+      setTimeout(() => setShowPlayPauseButton(false), 1000); // 1초 후 비활성화
+
       if (isPlaying) {
         videoRef.current.pause();
         setIsPlaying(false);
       } else {
-        videoRef.current
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch((error) => console.error("Error playing video:", error));
+        videoRef.current.play().then(() => setIsPlaying(true));
       }
     }
   };
@@ -101,11 +112,8 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
       setTimeout(() => {
         videoRef.current
           ?.play()
-          .then(() => console.log("Auto-play started successfully"))
-          .catch((error) => {
-            console.error("Error during auto-play:", error);
-            setIsPlaying(false);
-          });
+          .then(() => setIsPlaying(true))
+          .catch(() => setIsPlaying(false));
       }, 50);
     }
   };
@@ -139,46 +147,52 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
       />
 
       {/* Central Play/Pause Button */}
-      {mousePosition === "middle" && (
-        <button
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-kakao-yellow text-[3rem] rounded-full w-[6.25rem] h-[6.25rem] flex items-center justify-center hover:bg-black/50 transition-opacity duration-1000"
-          onClick={togglePlayPause}
-        >
-          {isPlaying ? "⏸︎" : "▶"}
-        </button>
-      )}
+      <button
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-kakao-yellow text-[3rem] rounded-full w-[6.25rem] h-[6.25rem] flex items-center justify-center hover:bg-black/50 transition-opacity duration-1000 ${
+          showPlayPauseButton
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        onClick={togglePlayPause}
+      >
+        {isPlaying ? "⏸︎" : "▶"}
+      </button>
 
       {/* Custom Controls */}
-      {mousePosition === "bottom" && (
-        <div className="absolute bottom-0 left-0 right-0 text-white p-2 transition-opacity duration-1000 opacity-100">
-          <div className="flex items-center space-x-4">
-            {/* Progress Bar */}
+      <div
+        className={`absolute bottom-0 left-0 right-0 text-white p-2 transition-opacity duration-1000 ${
+          mousePosition === "bottom" && showControls
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="flex items-center space-x-4">
+          {/* Progress Bar */}
+          <input
+            type="range"
+            className="w-full h-1 bg-transparent rounded-lg outline-none accent-kakao-yellow"
+            min="0"
+            max={duration || 0}
+            step="0.1"
+            value={currentTime}
+            onChange={handleSeek}
+          />
+
+          {/* Volume Control */}
+          <div className="flex items-center space-x-2">
+            <span>🔊</span>
             <input
               type="range"
-              className="w-full h-1 bg-transparent rounded-lg outline-none accent-kakao-yellow"
+              className="h-1 w-24 accent-kakao-yellow"
               min="0"
-              max={duration || 0}
-              step="0.1"
-              value={currentTime}
-              onChange={handleSeek}
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={handleVolumeChange}
             />
-
-            {/* Volume Control */}
-            <div className="flex items-center space-x-2">
-              <span>🔊</span>
-              <input
-                type="range"
-                className="h-1 w-24 accent-kakao-yellow"
-                min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={handleVolumeChange}
-              />
-            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
