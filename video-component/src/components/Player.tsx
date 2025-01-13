@@ -202,10 +202,27 @@ function Player({ src, autoplay = false }: PlayerProps) {
         }`}
         onClick={togglePlayPause}
       >
-        {isPlaying ? "⏸︎" : "▶"}
+        {isPlaying ? (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="pointer-events-none w-12 h-12 fill-current"
+            aria-hidden="true"
+          >
+            <path d="m7 4 12 8-12 8V4z"></path>
+          </svg>
+        ) : (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="pointer-events-none w-12 h-12 fill-current"
+            aria-hidden="true"
+          >
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
+          </svg>
+        )}
       </button>
 
-      {/* Volume Control - 상단 */}
       {/* Volume Control - 상단 */}
       <div
         className={`absolute top-0 left-0 right-0 p-2 transition-opacity duration-700 ${
