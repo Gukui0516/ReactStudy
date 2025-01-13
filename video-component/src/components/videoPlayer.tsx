@@ -8,10 +8,6 @@ interface PlayerProps {
 
 const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [videoDimensions, setVideoDimensions] = useState({
-    width: 0,
-    height: 0,
-  });
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -20,7 +16,7 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
     "top" | "middle" | "bottom" | null
   >(null);
   const [showControls, setShowControls] = useState(true);
-  const [showPlayPauseButton, setShowPlayPauseButton] = useState(false); // 일시정지 버튼 가시성 상태
+  const [showPlayPauseButton, setShowPlayPauseButton] = useState(false);
   const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -28,15 +24,26 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
       const player = dashjs.MediaPlayer().create();
       player.initialize(videoRef.current, src, autoplay);
 
+      // 음소거 설정
+      videoRef.current.muted = true;
+
       const handleLoadedMetadata = () => {
         if (videoRef.current) {
-          const { videoWidth, videoHeight, duration } = videoRef.current;
-          setVideoDimensions({ width: videoWidth, height: videoHeight });
-          setDuration(duration);
+          setDuration(videoRef.current.duration);
         }
       };
 
       videoRef.current.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+      // 자동재생 처리
+      if (autoplay) {
+        setTimeout(() => {
+          videoRef.current
+            ?.play()
+            .then(() => setIsPlaying(true))
+            .catch((error) => console.error("Autoplay failed:", error));
+        }, 100);
+      }
 
       return () => {
         player.destroy();
@@ -71,8 +78,8 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
 
   const togglePlayPause = () => {
     if (videoRef.current) {
-      setShowPlayPauseButton(true); // 버튼 가시성 활성화
-      setTimeout(() => setShowPlayPauseButton(false), 1000); // 1초 후 비활성화
+      setShowPlayPauseButton(true);
+      setTimeout(() => setShowPlayPauseButton(false), 1000);
 
       if (isPlaying) {
         videoRef.current.pause();
@@ -107,14 +114,14 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
 
   const handleVideoEnded = () => {
     if (videoRef.current) {
-      setIsPlaying(true);
+      // 비디오를 처음으로 돌리고 자동재생
       videoRef.current.currentTime = 0;
       setTimeout(() => {
         videoRef.current
           ?.play()
           .then(() => setIsPlaying(true))
-          .catch(() => setIsPlaying(false));
-      }, 50);
+          .catch((error) => console.error("Error during auto-replay:", error));
+      }, 100); // 짧은 지연 시간 추가
     }
   };
 
@@ -129,11 +136,7 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
 
   return (
     <div
-      className="relative bg-black rounded-lg overflow-hidden shadow-lg"
-      style={{
-        width: `${videoDimensions.width}px`,
-        height: `${videoDimensions.height}px`,
-      }}
+      className="relative bg-black rounded-lg overflow-hidden shadow-lg w-full h-full"
       onMouseMove={handleMouseMove}
     >
       {/* Video Element */}
@@ -148,7 +151,7 @@ const Player: React.FC<PlayerProps> = ({ src, autoplay = false }) => {
 
       {/* Central Play/Pause Button */}
       <button
-        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-kakao-yellow text-[3rem] rounded-full w-[6.25rem] h-[6.25rem] flex items-center justify-center hover:bg-black/50 transition-opacity duration-1000 ${
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-kakao-yellow text-[3rem] rounded-full w-[6.25rem] h-[6.25rem] flex items-center justify-center transition-opacity duration-1000 ${
           showPlayPauseButton
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
