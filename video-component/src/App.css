@@ -36,3 +36,27 @@
     transform: rotate(360deg);
   }
 }
+
+/* 작은 화면에서 핸들러 크기와 슬라이더 높이 줄이기 */
+@media (max-width: 640px) {
+  input[type="range"].custom-slider {
+    height: 0.15rem;
+  }
+
+  input[type="range"].custom-slider::-webkit-slider-thumb {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+}
+
+/* 큰 화면에서 슬라이더와 핸들 크기 늘리기 */
+@media (min-width: 1024px) {
+  input[type="range"].custom-slider {
+    height: 0.3rem;
+  }
+
+  input[type="range"].custom-slider::-webkit-slider-thumb {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+}
