@@ -1,5 +1,5 @@
 import React from "react";
-import Player from "./components/videoPlayer";
+import Player from "./components/Player";
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
           쇼미더머니 씹어먹는 썬라이즈
         </div>
         <Player
-          src="http://localhost:8080/hObAvaxlQ7o.mp4-manifest.mpd"
+          src="http://localhost:8080/hObAvaxlQ7o.mp4-manifest.mpd" //"http://192.168.1.110:3001/v1/videostream/video?manifest=hObAvaxlQ7o.mp4"
           autoplay={false}
         />
       </div>
